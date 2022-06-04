@@ -1,0 +1,39 @@
+#!/bin/bash
+
+
+# Save this file as /usr/bin/apt-file and chmod +x it.
+# This code is open source, based on apt-pac by cookiengineer
+
+case "$1" in
+
+    list)
+        pacman -Fl "$2";
+    ;;
+
+	search)
+		pacman -F "$2";
+	;;
+
+	update)
+		pacman -Fy;
+	;;
+
+	*|help)
+
+		echo "";
+		echo "apt-file - pacman wrapper for apt-file syntax";
+		echo "";
+		echo "";
+		echo "apt-file commands:";
+		echo "";
+		echo -e "\tlist [package]: show files the specified package installs";
+		echo "";
+		echo -e "\tsearch [file]: find packages which install the specified file";
+		echo "";
+		echo -e "\tupdate: update list of packages and files they own";
+		echo "";
+		echo "Type ""man pacman"" for more info on the underlying commands.";
+		echo "";
+	;;
+
+esac;

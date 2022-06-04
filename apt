@@ -1,0 +1,143 @@
+#!/bin/bash
+
+
+# Save this file as /usr/bin/apt and chmod +x it.
+# This code is open source, based on apt-pac by cookiengineer
+
+case "$1" in
+
+	autoremove)
+        unneeded=$(pacman -Qdtq);
+        if [[ -z $unneeded ]]; then
+            echo "No packages are auto-removable."
+        else
+		    pacman -Rns $(pacman -Qdtq);
+        fi;
+	;;
+
+	clean)
+		if [[ "$2" == "--force" ]]; then
+			pacman -Scc;
+		else
+			echo "Use \"apt clean --force\" to remove all packages from cache.";
+			pacman -Sc;
+		fi;
+	;;
+
+	autoclean)
+		if [[ "$2" == "--force" ]]; then
+			pacman -Scc;
+		else
+			echo "Use \"apt autoclean --force\" to remove all packages from cache.";
+			pacman -Sc;
+		fi;
+	;;
+
+	changelog)
+		pacman -Qc "$2";
+	;;
+
+    check)
+        pacman -Dk;
+    ;;
+
+	download)
+		pacman -Sw "$2";
+	;;
+
+	install)
+	    case "$1" in
+
+	        -y|--force-yes)
+	            pacman -S --noconfirm "$3";
+            ;;
+
+            --reinstall)
+                if [[ "$3"=="-y" || "$3"=="--force-yes" ]]; then
+                    pacman -S --noconfirm "$4";
+                else
+                    pacman -S "$3";
+                fi
+            ;;
+
+            *)
+		        pacman -S "$2";
+	        ;;
+        esac
+	;;
+
+    list)
+        if [[ "$2" == "--installed" ]]; then
+            if [[ -z "$3" ]]; then
+                pacman -Q;
+            else
+                pacman -Qs "$3";
+            fi;
+
+        elif [[ "$2" == "--upgradable" ]]; then
+            pacman -Qu;
+        else
+            pacman -Ss "$2";
+        fi;
+    ;;
+
+	policy)
+		cat /etc/pacman.d/mirrorlist | grep "^[^#]";
+	;;
+
+	rdepends)
+		pacman -Sii "$2";
+	;;
+
+	remove)
+		pacman -Rs "$2";
+	;;
+
+	search)
+	    if [[ "$2" == "--installed" ]]; then
+	        pacman -Qs "$2";
+        else
+    		pacman -Ss "$2";
+		fi;
+	;;
+
+	show)
+		pacman -Si "$2";
+	;;
+
+	update)
+		if [[ "$2" == "--force" ]]; then
+			pacman -Syyu;
+		else
+			echo "Use \"apt update --force\" to force-update packages index.";
+			pacman -Syu;
+		fi;
+	;;
+
+	upgrade|full-upgrade)
+		pacman -Su;
+	;;
+
+
+	*|help)
+
+		echo "";
+		echo "apt - pacman wrapper for apt-get syntax";
+		echo "";
+		echo "";
+		echo "APT commands:";
+		echo "";
+		echo -e "\tautoremove, clean, update, upgrade, policy";
+		echo "";
+		echo "Package-specific commands:";
+		echo "";
+		echo -e "\tchangelog, download, install, rdepends, remove, search, show";
+		echo "";
+		echo "Command-specific flags:";
+		echo -e "\t--force    can be used with clean, update to emulate same behaviour as aptitude.";
+		echo "";
+		echo "Type ""man pacman"" for more info on the underlying commands.";
+		echo "";
+	;;
+
+esac;

@@ -12,7 +12,8 @@ These scripts are written based on [the package management Rosetta on Arch Wiki]
 
 ## Installation
 
-Copy all the scripts to `/usr/bin/` and run `sudo chmod +x /usr/bin/apt*` (assuming you have `sudo` installed.)
+Copy all the scripts to `/usr/local/bin/` and run `sudo chmod +x /usr/local/bin/apt*` (assuming you have `sudo` installed.)
+Note that other binary location directories will also work, but installing wrapper scripts like this to `/usr/local/bin/` is better practice.
 
 ## Usage
 

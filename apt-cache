@@ -68,7 +68,7 @@ case "$1" in
 		fi
 	;;
 
-	show | showpkg
+    show | showpkg)
         pacman -Si "$2" # only works on one package at a time
     ;;
 

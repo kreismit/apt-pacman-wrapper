@@ -4,140 +4,234 @@
 # Save this file as /usr/bin/apt and chmod +x it.
 # This code is open source, based on apt-pac by cookiengineer
 
+str="" # string of arguments to pass to pacman after initial command
+
 case "$1" in
 
 	autoremove)
-        unneeded=$(pacman -Qdtq);
-        if [[ -z $unneeded ]]; then
-            echo "No packages are auto-removable."
+        if [[ -z $2 ]]; then
+            #  autoremove every unneeded package
+            unneeded=$(pacman -Qdtq)
+            if [[ -z $unneeded ]]; then
+                echo "No packages are auto-removable."
+            else
+                pacman -Rns $(pacman -Qdtq)
+            fi
         else
-		    pacman -Rns $(pacman -Qdtq);
-        fi;
+            # same as apt remove --autoremove
+            while [ $# -gt 0 ]; do
+                arg=$2
+                str="$str $arg"
+                shift
+            done
+            pacman -Rs $str
+        fi
 	;;
 
 	clean)
-		if [[ "$2" == "--force" ]]; then
-			pacman -Scc;
+		if [[ "$2" = "--force" ]]; then
+			pacman -Scc
 		else
-			echo "Use \"apt clean --force\" to remove all packages from cache.";
-			pacman -Sc;
-		fi;
+			echo "Use \"apt clean --force\" to remove all packages from cache."
+			pacman -Sc
+		fi
 	;;
 
 	autoclean)
-		if [[ "$2" == "--force" ]]; then
-			pacman -Scc;
+		if [[ "$2" = "--force" ]]; then
+			pacman -Scc
 		else
-			echo "Use \"apt autoclean --force\" to remove all packages from cache.";
-			pacman -Sc;
-		fi;
+			echo "Use \"apt autoclean --force\" to remove all packages from cache."
+			pacman -Sc
+		fi
 	;;
 
 	changelog)
-		pacman -Qc "$2";
+		pacman -Qc "$2" # only works on one package at a time
 	;;
 
     check)
-        pacman -Dk;
+        pacman -Dk # takes no arguments
     ;;
 
 	download)
-		pacman -Sw "$2";
+        while [ $# -gt 0 ]; do
+            arg=$2
+            str="$str $arg"
+            shift
+        done
+        pacman -Sw $str
 	;;
 
 	install)
-	    case "$1" in
+	    case "$2" in
 
-	        -y|--force-yes)
-	            pacman -S --noconfirm "$3";
+	        -y | --force-yes)
+                while [ $# -gt 0 ]; do
+                    arg=$3
+                    str="$str $arg"
+                    shift
+                done
+	            pacman -S --noconfirm $str
             ;;
 
             --reinstall)
-                if [[ "$3"=="-y" || "$3"=="--force-yes" ]]; then
-                    pacman -S --noconfirm "$4";
+                if [[ "$3"="-y" || "$3"="--force-yes" ]]; then
+                    pacman -S --noconfirm "$4"
                 else
-                    pacman -S "$3";
+                    while [ $# -gt 0 ]; do
+                        arg=$3
+                        str="$str $arg"
+                        shift
+                    done
+                    pacman -S $str
                 fi
             ;;
 
             *)
-		        pacman -S "$2";
+                while [ $# -gt 0 ]; do
+                    arg=$2
+                    str="$str $arg"
+                    shift
+                done
+                pacman -S $str
 	        ;;
         esac
 	;;
 
     list)
-        if [[ "$2" == "--installed" ]]; then
+        if [[ "$2" = "--installed" ]]; then
             if [[ -z "$3" ]]; then
-                pacman -Q;
+                pacman -Q
             else
-                pacman -Qs "$3";
-            fi;
+                while [ $# -gt 0 ]; do
+                    arg=$3
+                    str="$str $arg"
+                    shift
+                done
+                pacman -Qs $str
+            fi
 
-        elif [[ "$2" == "--upgradable" ]]; then
-            pacman -Qu;
+        elif [[ "$2" = "--upgradable" ]]; then
+            pacman -Qu
         else
-            pacman -Ss "$2";
-        fi;
+            while [ $# -gt 0 ]; do
+                arg=$2
+                str="$str $arg"
+                shift
+            done
+            pacman -Ss $str
+        fi
     ;;
 
 	policy)
-		cat /etc/pacman.d/mirrorlist | grep "^[^#]";
+		cat /etc/pacman.d/mirrorlist | grep "^[^#]"
 	;;
 
 	rdepends)
-		pacman -Sii "$2";
+		pacman -Sii "$2" # only works on one arg at a time
 	;;
 
 	remove)
-		pacman -Rs "$2";
+        if [[ "$2" = "--autoremove" ]]; then                
+            while [ $# -gt 0 ]; do
+                arg=$3
+                str="$str $arg"
+                shift
+            done
+            pacman -Rs $str
+        else
+            while [ $# -gt 0 ]; do
+                arg=$2
+                str="$str $arg"
+                shift
+            done
+            pacman -R $str
+        fi
 	;;
+    
+    purge)
+        if [[ "$2" = "--autoremove" ]]; then                
+            while [ $# -gt 0 ]; do
+                arg=$3
+                str="$str $arg"
+                shift
+            done
+            pacman -Rns $str
+        else
+            while [ $# -gt 0 ]; do
+                arg=$2
+                str="$str $arg"
+                shift
+            done
+            pacman -Rn $str
+        fi    
+    ;;
 
 	search)
-	    if [[ "$2" == "--installed" ]]; then
-	        pacman -Qs "$2";
+	    if [[ "$2" = "--installed" ]]; then
+            while [ $# -gt 0 ]; do
+                arg=$3
+                str="$str $arg"
+                shift
+            done
+	        pacman -Qs $str
         else
-    		pacman -Ss "$2";
-		fi;
+            while [ $# -gt 0 ]; do
+                arg=$2
+                str="$str $arg"
+                shift
+            done
+	        pacman -Ss $str
+		fi
 	;;
 
 	show)
-		pacman -Si "$2";
+		pacman -Si "$2" # only works on one package at a time
 	;;
 
-	update)
-		if [[ "$2" == "--force" ]]; then
-			pacman -Syyu;
+	update) # prevent partial upgrades by always upgrading when updating
+        # note: pacman can Syu or Syyu and also install packages in the
+        # same line. apt does not process packages as arguments with
+        # update or upgrade, so this behavior is not implemented here
+        # to preserve the original functionality of apt.
+		if [[ "$2" = "--force" ]]; then
+			pacman -Syyu
 		else
 			echo "Use \"apt update --force\" to force-update packages index.";
-			pacman -Syu;
-		fi;
+			pacman -Syu
+		fi
 	;;
+    
+    dist-upgrade)
+        pacman -Syu
+    ;;
 
-	upgrade|full-upgrade)
-		pacman -Su;
+	upgrade | full-upgrade)
+        # note: those commands do the same thing in Arch
+		pacman -Su
 	;;
 
 
 	*|help)
 
-		echo "";
-		echo "apt - pacman wrapper for apt-get syntax";
-		echo "";
-		echo "";
-		echo "APT commands:";
-		echo "";
-		echo -e "\tautoremove, clean, update, upgrade, policy";
-		echo "";
-		echo "Package-specific commands:";
-		echo "";
-		echo -e "\tchangelog, download, install, rdepends, remove, search, show";
-		echo "";
-		echo "Command-specific flags:";
-		echo -e "\t--force    can be used with clean, update to emulate same behaviour as aptitude.";
-		echo "";
-		echo "Type ""man pacman"" for more info on the underlying commands.";
-		echo "";
+		echo ""
+		echo "apt - pacman wrapper for apt/apt-get syntax"
+		echo ""
+		echo ""
+		echo "APT commands:"
+		echo ""
+		echo -e "\tautoremove, clean, update, upgrade, policy"
+		echo ""
+		echo "Package-specific commands:"
+		echo ""
+		echo -e "\tchangelog, download, install, rdepends, remove, search, show"
+		echo ""
+		echo "Command-specific flags:"
+		echo -e "\t--force    can be used with clean, update to emulate same behaviour as aptitude."
+		echo ""
+		echo "Type ""man pacman"" for more info on the underlying commands."
+		echo ""
 	;;
 
-esac;
+esac

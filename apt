@@ -8,7 +8,7 @@ str="" # string of arguments to pass to pacman after initial command
 
 case "$1" in
 
-	autoremove)
+    autoremove)
         if [[ -z $2 ]]; then
             #  autoremove every unneeded package
             unneeded=$(pacman -Qdtq)
@@ -26,53 +26,61 @@ case "$1" in
             done
             pacman -Rs $str
         fi
-	;;
+    ;;
 
-	clean)
-		if [[ "$2" = "--force" ]]; then
-			pacman -Scc
-		else
-			echo "Use \"apt clean --force\" to remove all packages from cache."
-			pacman -Sc
-		fi
-	;;
+    clean)
+        if [[ "$2" = "--force" ]]; then
+            pacman -Scc
+        else
+            echo "Use \"apt clean --force\" to remove all packages from cache."
+            pacman -Sc
+        fi
+    ;;
 
-	autoclean)
-		if [[ "$2" = "--force" ]]; then
-			pacman -Scc
-		else
-			echo "Use \"apt autoclean --force\" to remove all packages from cache."
-			pacman -Sc
-		fi
-	;;
+    autoclean)
+        if [[ "$2" = "--force" ]]; then
+            pacman -Scc
+        else
+            echo "Use \"apt autoclean --force\" to remove all packages from cache."
+            pacman -Sc
+        fi
+    ;;
 
-	changelog)
-		pacman -Qc "$2" # only works on one package at a time
-	;;
+    changelog)
+        pacman -Qc "$2" # only works on one package at a time
+    ;;
 
     check)
         pacman -Dk # takes no arguments
     ;;
-
-	download)
+    
+    depends)
+		pacman -Sii "$2" | grep "Depends On"  # only works on one package at a time
+	;;
+    
+    download)
         while [ $# -gt 0 ]; do
             arg=$2
             str="$str $arg"
             shift
         done
         pacman -Sw $str
-	;;
+    ;;
 
-	install)
-	    case "$2" in
+    dump | dumpavail)
+        pacman -Sl
+    ;;
 
-	        -y | --force-yes)
+    install)
+        case "$2" in
+
+            -y | --force-yes)
                 while [ $# -gt 0 ]; do
                     arg=$3
                     str="$str $arg"
                     shift
                 done
-	            pacman -S --noconfirm $str
+                pacman -S --noconfirm $str
             ;;
 
             --reinstall)
@@ -95,9 +103,9 @@ case "$1" in
                     shift
                 done
                 pacman -S $str
-	        ;;
+            ;;
         esac
-	;;
+    ;;
 
     list)
         if [[ "$2" = "--installed" ]]; then
@@ -124,15 +132,15 @@ case "$1" in
         fi
     ;;
 
-	policy)
-		cat /etc/pacman.d/mirrorlist | grep "^[^#]"
-	;;
+    policy)
+        cat /etc/pacman.d/mirrorlist | grep "^[^#]"
+    ;;
 
 	rdepends)
-		pacman -Sii "$2" # only works on one arg at a time
+		pacman -Sii "$2" | grep "Required By" # only works on one arg at a time
 	;;
 
-	remove)
+    remove)
         if [[ "$2" = "--autoremove" ]]; then                
             while [ $# -gt 0 ]; do
                 arg=$3
@@ -148,7 +156,7 @@ case "$1" in
             done
             pacman -R $str
         fi
-	;;
+    ;;
     
     purge)
         if [[ "$2" = "--autoremove" ]]; then                
@@ -168,70 +176,72 @@ case "$1" in
         fi    
     ;;
 
-	search)
-	    if [[ "$2" = "--installed" ]]; then
+    search)
+        if [[ "$2" = "--installed" ]]; then
             while [ $# -gt 0 ]; do
                 arg=$3
                 str="$str $arg"
                 shift
             done
-	        pacman -Qs $str
+            pacman -Qs $str
         else
             while [ $# -gt 0 ]; do
                 arg=$2
                 str="$str $arg"
                 shift
             done
-	        pacman -Ss $str
-		fi
-	;;
+            pacman -Ss $str
+        fi
+    ;;
 
-	show)
-		pacman -Si "$2" # only works on one package at a time
-	;;
+    show | showpkg)
+        pacman -Si "$2" # only works on one package at a time
+    ;;
 
-	update) # prevent partial upgrades by always upgrading when updating
+    update) # prevent partial upgrades by always upgrading when updating
         # note: pacman can Syu or Syyu and also install packages in the
         # same line. apt does not process packages as arguments with
         # update or upgrade, so this behavior is not implemented here
         # to preserve the original functionality of apt.
-		if [[ "$2" = "--force" ]]; then
-			pacman -Syyu
-		else
-			echo "Use \"apt update --force\" to force-update packages index.";
-			pacman -Syu
-		fi
-	;;
+        if [[ "$2" = "--force" ]]; then
+            pacman -Syyu
+        else
+            echo "Use \"apt update --force\" to force-update packages index.";
+            pacman -Syu
+        fi
+    ;;
     
     dist-upgrade)
         pacman -Syu
     ;;
 
-	upgrade | full-upgrade)
+    upgrade | full-upgrade)
         # note: those commands do the same thing in Arch
-		pacman -Su
-	;;
+        pacman -Su
+    ;;
 
 
-	*|help)
+    *|help)
 
-		echo ""
-		echo "apt - pacman wrapper for apt/apt-get syntax"
-		echo ""
-		echo ""
-		echo "APT commands:"
-		echo ""
-		echo -e "\tautoremove, clean, update, upgrade, policy"
-		echo ""
-		echo "Package-specific commands:"
-		echo ""
-		echo -e "\tchangelog, download, install, rdepends, remove, search, show"
-		echo ""
-		echo "Command-specific flags:"
-		echo -e "\t--force    can be used with clean, update to emulate same behaviour as aptitude."
-		echo ""
-		echo "Type ""man pacman"" for more info on the underlying commands."
-		echo ""
-	;;
+        echo ""
+        echo "apt - pacman wrapper for apt/apt-get/apt-cache syntax"
+        echo ""
+        echo ""
+        echo "APT commands:"
+        echo ""
+        echo -e "\tautoremove, clean, update, upgrade, policy"
+        echo ""
+        echo "Package-specific commands:"
+        echo ""
+        echo -e "\tchangelog, check, clean, depends, download, dump, install, policy, purge, rdepends, remove, search, show"
+        echo ""
+        echo "Command-specific flags:"
+        echo -e "\t--force      can be used with clean, update to emulate same behaviour as aptitude."
+        echo -e "\t--installed  can be used with search or list to filter out packages that are not installed on the system."
+        echo -e "\t--upgradable can be used with list to filter out packages which cannot be upgraded."
+        echo ""
+        echo "Type ""man pacman"" for more info on the underlying commands."
+        echo ""
+    ;;
 
 esac

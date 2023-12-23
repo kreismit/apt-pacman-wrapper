@@ -1,143 +1,94 @@
 #!/bin/bash
 
 
-# Save this file as /usr/bin/apt and chmod +x it.
+# Save this file as /usr/bin/apt-cache and chmod +x it.
 # This code is open source, based on apt-pac by cookiengineer
+
+
+str="" # string of arguments to pass to pacman after initial command
 
 case "$1" in
 
-	autoremove)
-        unneeded=$(pacman -Qdtq);
-        if [[ -z $unneeded ]]; then
-            echo "No packages are auto-removable."
-        else
-		    pacman -Rns $(pacman -Qdtq);
-        fi;
+    depends)
+		pacman -Sii "$2" | grep "Depends On"  # only works on one package at a time
 	;;
 
-	clean)
-		if [[ "$2" == "--force" ]]; then
-			pacman -Scc;
-		else
-			echo "Use \"apt clean --force\" to remove all packages from cache.";
-			pacman -Sc;
-		fi;
-	;;
-
-	autoclean)
-		if [[ "$2" == "--force" ]]; then
-			pacman -Scc;
-		else
-			echo "Use \"apt autoclean --force\" to remove all packages from cache.";
-			pacman -Sc;
-		fi;
-	;;
-
-	changelog)
-		pacman -Qc "$2";
-	;;
-
-    check)
-        pacman -Dk;
+    dump | dumpavail)
+        pacman -Sl
     ;;
 
-	download)
-		pacman -Sw "$2";
-	;;
-
-	install)
-	    case "$1" in
-
-	        -y|--force-yes)
-	            pacman -S --noconfirm "$3";
-            ;;
-
-            --reinstall)
-                if [[ "$3"=="-y" || "$3"=="--force-yes" ]]; then
-                    pacman -S --noconfirm "$4";
-                else
-                    pacman -S "$3";
-                fi
-            ;;
-
-            *)
-		        pacman -S "$2";
-	        ;;
-        esac
-	;;
-
     list)
-        if [[ "$2" == "--installed" ]]; then
+        if [[ "$2" = "--installed" ]]; then
             if [[ -z "$3" ]]; then
-                pacman -Q;
+                pacman -Q
             else
-                pacman -Qs "$3";
-            fi;
+                while [ $# -gt 0 ]; do
+                    arg=$3
+                    str="$str $arg"
+                    shift
+                done
+                pacman -Qs $str
+            fi
 
-        elif [[ "$2" == "--upgradable" ]]; then
-            pacman -Qu;
+        elif [[ "$2" = "--upgradable" ]]; then
+            pacman -Qu
         else
-            pacman -Ss "$2";
-        fi;
+            while [ $# -gt 0 ]; do
+                arg=$2
+                str="$str $arg"
+                shift
+            done
+            pacman -Ss $str
+        fi
     ;;
 
 	policy)
-		cat /etc/pacman.d/mirrorlist | grep "^[^#]";
+		cat /etc/pacman.d/mirrorlist | grep "^[^#]"
 	;;
 
 	rdepends)
-		pacman -Sii "$2";
-	;;
-
-	remove)
-		pacman -Rs "$2";
+		pacman -Sii "$2" | grep "Required By" # only works on one arg at a time
 	;;
 
 	search)
-	    if [[ "$2" == "--installed" ]]; then
-	        pacman -Qs "$2";
+	    if [[ "$2" = "--installed" ]]; then
+            while [ $# -gt 0 ]; do
+                arg=$3
+                str="$str $arg"
+                shift
+            done
+	        pacman -Qs $str
         else
-    		pacman -Ss "$2";
-		fi;
+            while [ $# -gt 0 ]; do
+                arg=$2
+                str="$str $arg"
+                shift
+            done
+	        pacman -Ss $str
+		fi
 	;;
 
-	show)
-		pacman -Si "$2";
-	;;
-
-	update)
-		if [[ "$2" == "--force" ]]; then
-			pacman -Syyu;
-		else
-			echo "Use \"apt update --force\" to force-update packages index.";
-			pacman -Syu;
-		fi;
-	;;
-
-	upgrade|full-upgrade)
-		pacman -Su;
-	;;
-
+	show | showpkg
+        pacman -Si "$2" # only works on one package at a time
+    ;;
 
 	*|help)
 
-		echo "";
-		echo "apt-cache - pacman wrapper for apt-get syntax";
-		echo "";
-		echo "";
-		echo "APT commands:";
-		echo "";
-		echo -e "\tautoremove, clean, update, upgrade, policy";
-		echo "";
-		echo "Package-specific commands:";
-		echo "";
-		echo -e "\tchangelog, download, install, rdepends, remove, search, show";
-		echo "";
-		echo "Command-specific flags:";
-		echo -e "\t--force    can be used with clean, update to emulate same behaviour as aptitude.";
-		echo "";
-		echo "Type ""man pacman"" for more info on the underlying commands.";
-		echo "";
+		echo ""
+		echo "apt-cache - pacman wrapper for apt-cache syntax"
+		echo ""
+		echo ""
+		echo "APT-CACHE commands:"
+		echo ""
+		echo -e "\tdump, dumpavail, search, showpkg, depends, rdepends, policy"
+		echo ""
+        echo "Command-specific flags:"
+		echo ""
+        echo -e "\t--installed  can be used with search or list to filter out packages that are not installed on the system."
+        echo -e "\t--upgradable can be used with list to filter out packages which cannot be upgraded."
+		echo ""
+		echo "Type ""man pacman"" for more info on the underlying commands."
+		echo ""
 	;;
 
 esac;

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Save this file as /usr/bin/apt and chmod +x it.
+# Save this file as /usr/bin/apt-get and chmod +x it.
 # This code is open source, based on apt-pac by cookiengineer
 
 cwd=${0%%/apt-get} # figure out where this script is being run from

@@ -6,74 +6,104 @@
 
 case "$1" in
 
-	autoremove)
-        unneeded=$(pacman -Qdtq);
-        if [[ -z $unneeded ]]; then
-            echo "No packages are auto-removable."
+    autoremove)
+        if [[ -z $2 ]]; then
+            #  autoremove every unneeded package
+            unneeded=$(pacman -Qdtq)
+            if [[ -z $unneeded ]]; then
+                echo "No packages are auto-removable."
+            else
+                pacman -Rns $(pacman -Qdtq)
+            fi
         else
-		    pacman -Rns $unneeded;
+            # same as apt remove --autoremove
+            while [ $# -gt 0 ]; do
+                arg=$2
+                str="$str $arg"
+                shift
+            done
+            pacman -Rs $str
+        fi
+    ;;
+
+    clean)
+        if [[ "$2" == "--force" ]]; then
+            pacman -Scc;
+        else
+            echo "Use \"apt clean --force\" to remove all packages from cache.";
+            pacman -Sc;
         fi;
-	;;
+    ;;
 
-	clean)
-		if [[ "$2" == "--force" ]]; then
-			pacman -Scc;
-		else
-			echo "Use \"apt clean --force\" to remove all packages from cache.";
-			pacman -Sc;
-		fi;
-	;;
+    autoclean)
+        if [[ "$2" == "--force" ]]; then
+            pacman -Scc;
+        else
+            echo "Use \"apt autoclean --force\" to remove all packages from cache.";
+            pacman -Sc;
+        fi;
+    ;;
 
-	autoclean)
-		if [[ "$2" == "--force" ]]; then
-			pacman -Scc;
-		else
-			echo "Use \"apt autoclean --force\" to remove all packages from cache.";
-			pacman -Sc;
-		fi;
-	;;
-
-	changelog)
-		pacman -Qc "$2";
-	;;
+    changelog)
+        pacman -Qc "$2";
+    ;;
 
     check)
         pacman -Dk;
     ;;
 
-	download)
-		pacman -Sw "$2";
-	;;
+    download)
+        pacman -Sw "$2";
+    ;;
 
-	install)
-	    case "$1" in
+    install)
+        case "$2" in
 
-	        -y|--force-yes)
-	            pacman -S --noconfirm "$3";
+            -y | --yes | --force-yes)
+                while [ $# -gt 0 ]; do
+                    arg=$3
+                    str="$str $arg"
+                    shift
+                done
+                pacman -S --noconfirm $str
             ;;
 
             --reinstall)
-                if [[ "$3"=="-y" || "$3"=="--force-yes" ]]; then
-                    pacman -S --noconfirm "$4";
+                if [[ "$3"="-y" || "$3"="--force-yes" ]]; then
+                    pacman -S --noconfirm "$4"
                 else
-                    pacman -S "$3";
+                    while [ $# -gt 0 ]; do
+                        arg=$3
+                        str="$str $arg"
+                        shift
+                    done
+                    pacman -S $str
                 fi
             ;;
 
             *)
-		        pacman -S "$2";
-	        ;;
+                while [ $# -gt 0 ]; do
+                    arg=$2
+                    str="$str $arg"
+                    shift
+                done
+                pacman -S $str
+            ;;
         esac
-	;;
+    ;;
 
     list)
-        if [[ "$2" == "--installed" ]]; then
+        if [[ "$2" = "--installed" ]]; then
             if [[ -z "$3" ]]; then
-                pacman -Q;
+                pacman -Q
             else
-                pacman -Qs "$3";
-            fi;
-
+                while [ $# -gt 0 ]; do
+                    arg=$3
+                    str="$str $arg"
+                    shift
+                done
+                pacman -Qs $str
+            fi
         elif [[ "$2" == "--upgradable" ]]; then
             pacman -Qu;
         else
@@ -81,63 +111,77 @@ case "$1" in
         fi;
     ;;
 
-	policy)
-		cat /etc/pacman.d/mirrorlist | grep "^[^#]";
-	;;
+    policy)
+        cat /etc/pacman.d/mirrorlist | grep "^[^#]";
+    ;;
 
-	rdepends)
-		pacman -Sii "$2";
-	;;
+    rdepends)
+        pacman -Sii "$2";
+    ;;
 
-	remove)
-		pacman -Rs "$2";
-	;;
+    remove)
+        pacman -Rs "$2";
+    ;;
 
-	search)
-	    if [[ "$2" == "--installed" ]]; then
-	        pacman -Qs "$2";
+    search)
+        if [[ "$2" == "--installed" ]]; then
+            pacman -Qs "$2";
         else
-    		pacman -Ss "$2";
-		fi;
-	;;
+            pacman -Ss "$2";
+        fi;
+    ;;
 
-	show)
-		pacman -Si "$2";
-	;;
+    show)
+        pacman -Si "$2";
+    ;;
 
-	update)
-		if [[ "$2" == "--force" ]]; then
-			pacman -Syyu;
-		else
-			echo "Use \"apt update --force\" to force-update packages index.";
-			pacman -Syu;
-		fi;
-	;;
+    update)
+        case "$2" in
+            --force)
+                pacman -Syyu;
+            ;;
+            --y|--yes|--force-yes)
+                pacman --noconfirm -Syu;
+            ;;
+            *)
+                echo "Use \"apt update --force\" to force-update packages index.";
+                pacman -Syu;
+            ;;
+        esac;
+    ;;
 
-	upgrade|full-upgrade)
-		pacman -Su;
-	;;
+    upgrade|dist-upgrade|full-upgrade)
+        # all these commands do the same thing in Arch
+        case "$2" in
+            -y|--yes|--force-yes)
+                pacman --noconfirm -Su;
+            ;;
+            *)
+                pacman -Su;
+            ;;
+        esac;
+    ;;
 
 
-	*|help)
+    *|help)
 
-		echo "";
-		echo "apt-get - pacman wrapper for apt-get syntax";
-		echo "";
-		echo "";
-		echo "APT commands:";
-		echo "";
-		echo -e "\tautoremove, clean, update, upgrade, policy";
-		echo "";
-		echo "Package-specific commands:";
-		echo "";
-		echo -e "\tchangelog, download, install, rdepends, remove, search, show";
-		echo "";
-		echo "Command-specific flags:";
-		echo -e "\t--force    can be used with clean, update to emulate same behaviour as aptitude.";
-		echo "";
-		echo "Type ""man pacman"" for more info on the underlying commands.";
-		echo "";
-	;;
+        echo "";
+        echo "apt-get - pacman wrapper for apt-get syntax";
+        echo "";
+        echo "";
+        echo "APT commands:";
+        echo "";
+        echo -e "\tautoremove, clean, update, upgrade, policy";
+        echo "";
+        echo "Package-specific commands:";
+        echo "";
+        echo -e "\tchangelog, download, install, rdepends, remove, search, show";
+        echo "";
+        echo "Command-specific flags:";
+        echo -e "\t--force    can be used with clean, update to emulate same behaviour as aptitude.";
+        echo "";
+        echo "Type ""man pacman"" for more info on the underlying commands.";
+        echo "";
+    ;;
 
 esac;

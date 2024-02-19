@@ -10,30 +10,30 @@ case "$1" in
         pacman -Fl "$2";
     ;;
 
-	search)
-		pacman -F "$2";
-	;;
+    search)
+        pacman -F "$2";
+    ;;
 
-	update)
-		pacman -Fy;
-	;;
+    update)
+        pacman -Fy;
+    ;;
 
-	*|help)
+    *|help)
 
-		echo "";
-		echo "apt-file - pacman wrapper for apt-file syntax";
-		echo "";
-		echo "";
-		echo "apt-file commands:";
-		echo "";
-		echo -e "\tlist [package]: show files the specified package installs";
-		echo "";
-		echo -e "\tsearch [file]: find packages which install the specified file";
-		echo "";
-		echo -e "\tupdate: update list of packages and files they own";
-		echo "";
-		echo "Type ""man pacman"" for more info on the underlying commands.";
-		echo "";
-	;;
+        echo "";
+        echo "apt-file - pacman wrapper for apt-file syntax";
+        echo "";
+        echo "";
+        echo "apt-file commands:";
+        echo "";
+        echo -e "\tlist [package]: show files the specified package installs";
+        echo "";
+        echo -e "\tsearch [file]: find packages which install the specified file";
+        echo "";
+        echo -e "\tupdate: update list of packages and files they own";
+        echo "";
+        echo "Type ""man pacman"" for more info on the underlying commands.";
+        echo "";
+    ;;
 
 esac;

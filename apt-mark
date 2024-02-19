@@ -10,36 +10,36 @@ case "$1" in
         pacman -S --asdeps "$2";
     ;;
 
-	manual)
-		pacman -D --asexplicit "$2";
-	;;
+    manual)
+        pacman -D --asexplicit "$2";
+    ;;
 
-	showauto)
-		pacman -Qd;
-	;;
+    showauto)
+        pacman -Qd;
+    ;;
 
     showmanual)
         pacman -Qe;
     ;;
 
-	*|help)
+    *|help)
 
-		echo "";
-		echo "apt-mark - pacman wrapper for apt-mark syntax";
-		echo "";
-		echo "";
-		echo "apt-mark commands:";
-		echo "";
-		echo -e "\tapt-mark auto: set a package to automatically installed (as dependency)";
-		echo "";
-		echo -e "\tapt-mark manual: set a package to manually installed (not a dependency)";
-		echo "";
-		echo -e "\tapt-mark showauto: show all packages installed automatically";
-		echo "";
-		echo -e "\tapt-mark showmanual: show all packages manually installed";
-		echo "";
-		echo "Type ""man pacman"" for more info on the underlying commands.";
-		echo "";
-	;;
+        echo "";
+        echo "apt-mark - pacman wrapper for apt-mark syntax";
+        echo "";
+        echo "";
+        echo "apt-mark commands:";
+        echo "";
+        echo -e "\tapt-mark auto: set a package to automatically installed (as dependency)";
+        echo "";
+        echo -e "\tapt-mark manual: set a package to manually installed (not a dependency)";
+        echo "";
+        echo -e "\tapt-mark showauto: show all packages installed automatically";
+        echo "";
+        echo -e "\tapt-mark showmanual: show all packages manually installed";
+        echo "";
+        echo "Type ""man pacman"" for more info on the underlying commands.";
+        echo "";
+    ;;
 
 esac;

@@ -10,8 +10,8 @@ str="" # string of arguments to pass to pacman after initial command
 case "$1" in
 
     depends)
-		pacman -Sii "$2" | grep "Depends On"  # only works on one package at a time
-	;;
+        pacman -Sii "$2" | grep "Depends On"  # only works on one package at a time
+    ;;
 
     dump | dumpavail)
         pacman -Sl
@@ -42,53 +42,53 @@ case "$1" in
         fi
     ;;
 
-	policy)
-		cat /etc/pacman.d/mirrorlist | grep "^[^#]"
-	;;
+    policy)
+        cat /etc/pacman.d/mirrorlist | grep "^[^#]"
+    ;;
 
-	rdepends)
-		pacman -Sii "$2" | grep "Required By" # only works on one arg at a time
-	;;
+    rdepends)
+        pacman -Sii "$2" | grep "Required By" # only works on one arg at a time
+    ;;
 
-	search)
-	    if [[ "$2" = "--installed" ]]; then
+    search)
+        if [[ "$2" = "--installed" ]]; then
             while [ $# -gt 0 ]; do
                 arg=$3
                 str="$str $arg"
                 shift
             done
-	        pacman -Qs $str
+            pacman -Qs $str
         else
             while [ $# -gt 0 ]; do
                 arg=$2
                 str="$str $arg"
                 shift
             done
-	        pacman -Ss $str
-		fi
-	;;
+            pacman -Ss $str
+        fi
+    ;;
 
     show | showpkg)
         pacman -Si "$2" # only works on one package at a time
     ;;
 
-	*|help)
+    *|help)
 
-		echo ""
-		echo "apt-cache - pacman wrapper for apt-cache syntax"
-		echo ""
-		echo ""
-		echo "APT-CACHE commands:"
-		echo ""
-		echo -e "\tdump, dumpavail, search, showpkg, depends, rdepends, policy"
-		echo ""
+        echo ""
+        echo "apt-cache - pacman wrapper for apt-cache syntax"
+        echo ""
+        echo ""
+        echo "APT-CACHE commands:"
+        echo ""
+        echo -e "\tdump, dumpavail, search, showpkg, depends, rdepends, policy"
+        echo ""
         echo "Command-specific flags:"
-		echo ""
+        echo ""
         echo -e "\t--installed  can be used with search or list to filter out packages that are not installed on the system."
         echo -e "\t--upgradable can be used with list to filter out packages which cannot be upgraded."
-		echo ""
-		echo "Type ""man pacman"" for more info on the underlying commands."
-		echo ""
-	;;
+        echo ""
+        echo "Type ""man pacman"" for more info on the underlying commands."
+        echo ""
+    ;;
 
 esac;
